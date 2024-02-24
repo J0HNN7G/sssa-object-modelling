@@ -39,7 +39,6 @@ TEST:
 
   VID_PRED:
     include: True
-    forecast: 21
     spp: 16
 
   GPU:
