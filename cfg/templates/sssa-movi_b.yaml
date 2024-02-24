@@ -1,0 +1,124 @@
+DATA:
+  set: movi_b
+  max_objs: 10
+  fps: 12
+  fpv: 24
+  height: 256
+  width: 256
+
+
+TRAIN:
+  self_sup: True
+
+  STAGE_1:
+    include: True
+    num_epoch: 100
+    forecast: 3
+
+  STAGE_2:
+    include: True
+    num_epoch: 100
+    forecast: 3
+    spp: 4
+    weight_mse: 1.0
+
+  OPTIM:
+    optim: adam
+    lr: 0.001
+    beta1: 0.9
+    beta2: 0.999
+    weight_decay: 0.0
+
+  GPU:
+    model: NVIDIA GeForce RTX A4000
+
+
+TEST:
+  OBJ_MOD:
+    include: True
+
+  VID_PRED:
+    include: True
+    forecast: 21
+    spp: 16
+
+  GPU:
+    model: NVIDIA GeForce GTX 1060
+
+
+MODEL:
+  INPUT:
+    window: 3
+    video: True
+    depth: True
+    opt_flow: True
+    mask: True
+
+  ENCODING:
+    TEMPORAL:
+      arch: resnet_18
+      dropout: 0.1
+      activation: relu
+      batch_norm: True
+      embed_size: 512
+
+    PRIORS:
+      cam_pose: True
+      obj_class: True
+      num_obj_class: 11
+      arch: mlp
+      num_layers: 1
+      hidden_size: 2048
+      dropout: 0.1
+      activation: relu
+      batch_norm: True
+      embed_size: 512
+
+    INTERACTION:
+      include: True
+      arch: transformer_encoder
+      num_layers: 1
+      num_heads: 8
+      dropout: 0.1
+      hidden_size: 2048
+      embed_size: 512
+
+  DECODING:
+    BASE:
+      arch: mlp
+      num_layers: 1
+      hidden_size: 2048
+      dropout: 0.1
+      activation: relu
+      batch_norm: True
+      category_est: gumbel_softmax
+
+    PARAMETERS:
+      SCALE:
+        include: True
+        continuous: True
+
+      POSITION:
+        include: True
+        continuous: True
+
+      ORIENTATION:
+        include: True
+        continuous: True
+
+      LINEAR_VELOCITY:
+        include: True
+        continuous: True
+
+      ANGULAR_VELOCITY:
+        include: True
+        continuous: True
+
+      MATERIAL:
+        include: True
+        continuous: False
+        num_category: 2
+
+      COLOUR:
+        include: True
+        continuous: True

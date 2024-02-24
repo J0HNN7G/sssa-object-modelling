@@ -1,0 +1,31 @@
+{
+    "PERSONAL": {
+        "HOME": "/home",
+        "USER": "",
+        "PROJECT": "sssa-object-modelling"
+    },
+    "EDI": {
+        "HOME": "/home",
+        "USER": "",
+        "PROJECT": "sssa-object-modelling"
+    },
+    "SCRATCH": {
+        "HOME": "/disk/scratch",
+        "USER" : "",
+        "PROJECT" : "sssa-object-modelling"
+    },
+    "DATASET": "movi_a",
+    "CONFIG_DN": "config",
+    "DATA_DN": "data/sets",
+    "CKPT_DN": "ckpt",
+    "SLURM_DN": "slurm",
+    "TRAIN_FN": "train.py",
+    "TEST_FN": "test.py",
+    "EXP": {
+        "CSV": {
+            "DEFAULT_FN" : "EXP.csv",
+            "FAILED_FN" : "EXP_FAIL.csv",
+            "TIMEOUT_FN" : "EXP_TIMEOUT.csv"
+        }
+    }
+}

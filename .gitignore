@@ -1,5 +1,20 @@
-# Personal
+### Personal ###
 TODO
+# configs
+cfg/*
+!cfg/templates/
+# data
+data/sets/*
+# checkpoints
+ckpt/*
+# slurm
+slurm/*
+!slurm/templates/
+!slurm/scripts/
+# wandb
+wandb/*
+!wandb/templates/
+!wandb/scripts/
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,ros,jupyternotebooks,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,ros,jupyternotebooks,c++
