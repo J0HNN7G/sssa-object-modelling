@@ -9,16 +9,15 @@ DATA:
 
 TRAIN:
   self_sup: True
+  forecast: 3
 
   STAGE_1:
     include: True
     num_epoch: 100
-    forecast: 3
 
   STAGE_2:
     include: True
     num_epoch: 100
-    forecast: 3
     spp: 4
     weight_mse: 1.0
 
@@ -30,7 +29,7 @@ TRAIN:
     weight_decay: 0.0
 
   GPU:
-    model: NVIDIA GeForce RTX A4000
+    model: NVIDIA GeForce RTX A6000
 
 
 TEST:
@@ -46,23 +45,25 @@ TEST:
 
 
 MODEL:
+  window: 3
+  
   INPUT:
-    window: 3
     video: True
     depth: True
     opt_flow: True
     mask: True
 
-  ENCODING:
-    TEMPORAL:
+  ENCODE:
+    TEMP:
       arch: resnet_18
       dropout: 0.1
       activation: relu
       batch_norm: True
       embed_size: 512
 
-    PRIORS:
-      cam_pose: True
+    PRIOR:
+      cam_pos: True
+      cam_ori: True
       obj_class: True
       num_obj_class: 11
       arch: mlp
@@ -73,7 +74,7 @@ MODEL:
       batch_norm: True
       embed_size: 512
 
-    INTERACTION:
+    INTER:
       include: True
       arch: transformer_encoder
       num_layers: 1
@@ -82,7 +83,7 @@ MODEL:
       hidden_size: 2048
       embed_size: 512
 
-  DECODING:
+  DECODE:
     BASE:
       arch: mlp
       num_layers: 1
@@ -92,32 +93,32 @@ MODEL:
       batch_norm: True
       category_est: gumbel_softmax
 
-    PARAMETERS:
-      SCALE:
+    PARAM:
+      SIZE:
         include: True
         continuous: True
 
-      POSITION:
+      POS:
         include: True
         continuous: True
 
-      ORIENTATION:
+      ORI:
         include: True
         continuous: True
 
-      LINEAR_VELOCITY:
+      LIN_VEL:
         include: True
         continuous: True
 
-      ANGULAR_VELOCITY:
+      ANG_VEL:
         include: True
         continuous: True
 
       MATERIAL:
         include: True
         continuous: False
-        num_category: 2
+        num_class: 2
 
-      COLOUR:
+      COLOR:
         include: True
         continuous: True

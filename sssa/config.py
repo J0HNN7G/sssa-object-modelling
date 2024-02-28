@@ -36,6 +36,12 @@ cfg.TRAIN = CN()
 
 # learn self-supervised
 cfg.TRAIN.self_sup = True
+# number of validation videos
+cfg.TRAIN.val_count = 5
+# number of frames overlapping per window 
+cfg.TRAIN.stride = 1
+# number of time steps to forecast
+cfg.TRAIN.forecast = 3
 
 
 cfg.TRAIN.OUTPUT = CN()
@@ -69,17 +75,13 @@ cfg.TRAIN.STAGE_1 = CN()
 cfg.TRAIN.STAGE_1.include = True
 # number of epochs for stage 1
 cfg.TRAIN.STAGE_1.num_epoch = 100
-# number of time steps to forecast
-cfg.TRAIN.STAGE_1.forecast = 3
 
 
 cfg.TRAIN.STAGE_2 = CN()
 # whether to include stage 2
 cfg.TRAIN.STAGE_2.include = True
 # number of epochs for stage 2
-cfg.TRAIN.STAGE_2.num_epoch = cfg.TRAIN.STAGE_1.num_epoch
-# number of time steps to forecast
-cfg.TRAIN.STAGE_2.forecast = cfg.TRAIN.STAGE_1.forecast
+cfg.TRAIN.STAGE_2.num_epoch = 100
 # samples per pixel for renderer
 cfg.TRAIN.STAGE_2.spp = 4
 # pixel-wise MSE loss weight
@@ -142,9 +144,10 @@ cfg.TEST.GPU.model = "NVIDIA GeForce GTX 1060"
 # -----------------------------------------------------------------------------
 cfg.MODEL = CN()
 
-cfg.MODEL.INPUT = CN()
 # number of frames in the input window
-cfg.MODEL.INPUT.window = 3
+cfg.MODEL.window = 3
+
+cfg.MODEL.INPUT = CN()
 # include video
 cfg.MODEL.INPUT.video = True
 # include depth
@@ -155,143 +158,145 @@ cfg.MODEL.INPUT.opt_flow = True
 cfg.MODEL.INPUT.mask = True
 
 
-cfg.MODEL.ENCODING = CN()
+cfg.MODEL.ENCODE = CN()
 
 # temporal encoding
-cfg.MODEL.ENCODING.TEMPORAL = CN()
+cfg.MODEL.ENCODE.TEMP = CN()
 # temporal encoding architecture
-cfg.MODEL.ENCODING.TEMPORAL.arch = 'resnet_18'
+cfg.MODEL.ENCODE.TEMP.arch = 'resnet_18'
 # dropout rate
-cfg.MODEL.ENCODING.TEMPORAL.dropout = 0.1
+cfg.MODEL.ENCODE.TEMP.dropout = 0.1
 # activation function
-cfg.MODEL.ENCODING.TEMPORAL.activation = 'relu'
+cfg.MODEL.ENCODE.TEMP.activation = 'relu'
 # batch normalization
-cfg.MODEL.ENCODING.TEMPORAL.batch_norm = True
+cfg.MODEL.ENCODE.TEMP.batch_norm = True
 # embedding size
-cfg.MODEL.ENCODING.TEMPORAL.embed_size = 512
+cfg.MODEL.ENCODE.TEMP.embed_size = 512
 
 # prior encoding
-cfg.MODEL.ENCODING.PRIORS = CN()
-# include camera pose in prior encoding
-cfg.MODEL.ENCODING.PRIORS.cam_pose = True
+cfg.MODEL.ENCODE.PRIOR = CN()
+# include camera position in prior encoding
+cfg.MODEL.ENCODE.PRIOR.cam_pos = True
+# include camera orientation in prior encoding
+cfg.MODEL.ENCODE.PRIOR.cam_ori = True
 # include object class in prior encoding
-cfg.MODEL.ENCODING.PRIORS.obj_class = True
+cfg.MODEL.ENCODE.PRIOR.obj_class = True
 # number of object classes
-cfg.MODEL.ENCODING.PRIORS.num_obj_class = -1
+cfg.MODEL.ENCODE.PRIOR.num_obj_class = -1
 # temporal encoding architecture
-cfg.MODEL.ENCODING.PRIORS.arch = 'mlp'
+cfg.MODEL.ENCODE.PRIOR.arch = 'mlp'
 # number of hidden layers
-cfg.MODEL.ENCODING.PRIORS.num_layers = 1
+cfg.MODEL.ENCODE.PRIOR.num_layers = 1
 # hidden layer size
-cfg.MODEL.ENCODING.PRIORS.hidden_size = 2048
+cfg.MODEL.ENCODE.PRIOR.hidden_size = 2048
 # dropout rate
-cfg.MODEL.ENCODING.PRIORS.dropout = cfg.MODEL.ENCODING.TEMPORAL.dropout
+cfg.MODEL.ENCODE.PRIOR.dropout = cfg.MODEL.ENCODE.TEMP.dropout
 # activation function
-cfg.MODEL.ENCODING.PRIORS.activation = cfg.MODEL.ENCODING.TEMPORAL.activation
+cfg.MODEL.ENCODE.PRIOR.activation = cfg.MODEL.ENCODE.TEMP.activation
 # batch normalization
-cfg.MODEL.ENCODING.PRIORS.batch_norm = cfg.MODEL.ENCODING.TEMPORAL.batch_norm
+cfg.MODEL.ENCODE.PRIOR.batch_norm = cfg.MODEL.ENCODE.TEMP.batch_norm
 # embedding size
-cfg.MODEL.ENCODING.PRIORS.embed_size = cfg.MODEL.ENCODING.TEMPORAL.embed_size
+cfg.MODEL.ENCODE.PRIOR.embed_size = cfg.MODEL.ENCODE.TEMP.embed_size
 
 
 # interaction encoding
-cfg.MODEL.ENCODING.INTERACTION = CN()
+cfg.MODEL.ENCODE.INTER = CN()
 # include ineraction encoding
-cfg.MODEL.ENCODING.INTERACTION.include = True
+cfg.MODEL.ENCODE.INTER.include = True
 # interaction encoding architecture
-cfg.MODEL.ENCODING.INTERACTION.arch = 'transformer_encoder'
+cfg.MODEL.ENCODE.INTER.arch = 'transformer_encoder'
 # number of sub-layers in the encoder
-cfg.MODEL.ENCODING.INTERACTION.num_layers = 1
+cfg.MODEL.ENCODE.INTER.num_layers = 1
 # number of heads in the multi-head attention
-cfg.MODEL.ENCODING.INTERACTION.num_heads = 8
+cfg.MODEL.ENCODE.INTER.num_heads = 8
 # dropout rate
-cfg.MODEL.ENCODING.INTERACTION.dropout = cfg.MODEL.ENCODING.TEMPORAL.dropout
+cfg.MODEL.ENCODE.INTER.dropout = cfg.MODEL.ENCODE.TEMP.dropout
 # hidden layer size
-cfg.MODEL.ENCODING.INTERACTION.hidden_size = cfg.MODEL.ENCODING.PRIORS.hidden_size
+cfg.MODEL.ENCODE.INTER.hidden_size = cfg.MODEL.ENCODE.PRIOR.hidden_size
 # embedding size
-cfg.MODEL.ENCODING.INTERACTION.embed_size = cfg.MODEL.ENCODING.TEMPORAL.embed_size
+cfg.MODEL.ENCODE.INTER.embed_size = cfg.MODEL.ENCODE.TEMP.embed_size
 
 
 # parameter decoding
-cfg.MODEL.DECODING = CN()
+cfg.MODEL.DECODE = CN()
 
 # base of parameter decoding
-cfg.MODEL.DECODING.BASE = CN()
+cfg.MODEL.DECODE.BASE = CN()
 # decoder architecture
-cfg.MODEL.DECODING.BASE.arch = 'mlp'
+cfg.MODEL.DECODE.BASE.arch = 'mlp'
 # number of hidden layers
-cfg.MODEL.DECODING.BASE.num_layers = 1
+cfg.MODEL.DECODE.BASE.num_layers = 1
 # hidden layer size
-cfg.MODEL.DECODING.BASE.hidden_size = cfg.MODEL.ENCODING.PRIORS.hidden_size
+cfg.MODEL.DECODE.BASE.hidden_size = cfg.MODEL.ENCODE.PRIOR.hidden_size
 # dropout rate
-cfg.MODEL.DECODING.BASE.dropout = cfg.MODEL.ENCODING.TEMPORAL.dropout
+cfg.MODEL.DECODE.BASE.dropout = cfg.MODEL.ENCODE.TEMP.dropout
 # activation function
-cfg.MODEL.DECODING.BASE.activation = cfg.MODEL.ENCODING.TEMPORAL.activation
+cfg.MODEL.DECODE.BASE.activation = cfg.MODEL.ENCODE.TEMP.activation
 # batch normalization
-cfg.MODEL.DECODING.BASE.batch_norm = cfg.MODEL.ENCODING.TEMPORAL.batch_norm
+cfg.MODEL.DECODE.BASE.batch_norm = cfg.MODEL.ENCODE.TEMP.batch_norm
 # differentiable categorical estimator
-cfg.MODEL.DECODING.BASE.category_est = 'gumbel_softmax'
+cfg.MODEL.DECODE.BASE.category_est = 'gumbel_softmax'
 
 
 # continuous parameter decoding
-cfg.MODEL.DECODING.PARAMETERS = CN()
+cfg.MODEL.DECODE.PARAM = CN()
 
 # scale decoding
-cfg.MODEL.DECODING.PARAMETERS.SCALE = CN()
-cfg.MODEL.DECODING.PARAMETERS.SCALE.include = True
-cfg.MODEL.DECODING.PARAMETERS.SCALE.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.SCALE.num_category = -1
+cfg.MODEL.DECODE.PARAM.SIZE = CN()
+cfg.MODEL.DECODE.PARAM.SIZE.include = True
+cfg.MODEL.DECODE.PARAM.SIZE.continuous = True
+cfg.MODEL.DECODE.PARAM.SIZE.num_class = -1
 
 # position decoding
-cfg.MODEL.DECODING.PARAMETERS.POSITION = CN()
-cfg.MODEL.DECODING.PARAMETERS.POSITION.include = True
-cfg.MODEL.DECODING.PARAMETERS.POSITION.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.POSITION.num_category = -1
+cfg.MODEL.DECODE.PARAM.POS = CN()
+cfg.MODEL.DECODE.PARAM.POS.include = True
+cfg.MODEL.DECODE.PARAM.POS.continuous = True
+cfg.MODEL.DECODE.PARAM.POS.num_class = -1
 
 # orientation decoding
-cfg.MODEL.DECODING.PARAMETERS.ORIENTATION = CN()
-cfg.MODEL.DECODING.PARAMETERS.ORIENTATION.include = True
-cfg.MODEL.DECODING.PARAMETERS.ORIENTATION.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.ORIENTATION.num_category = -1
+cfg.MODEL.DECODE.PARAM.ORI = CN()
+cfg.MODEL.DECODE.PARAM.ORI.include = True
+cfg.MODEL.DECODE.PARAM.ORI.continuous = True
+cfg.MODEL.DECODE.PARAM.ORI.num_class = -1
 
 # linear velocity decoding
-cfg.MODEL.DECODING.PARAMETERS.LINEAR_VELOCITY  = CN()
-cfg.MODEL.DECODING.PARAMETERS.LINEAR_VELOCITY.include = True
-cfg.MODEL.DECODING.PARAMETERS.LINEAR_VELOCITY.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.LINEAR_VELOCITY.num_category = -1
+cfg.MODEL.DECODE.PARAM.LIN_VEL  = CN()
+cfg.MODEL.DECODE.PARAM.LIN_VEL.include = True
+cfg.MODEL.DECODE.PARAM.LIN_VEL.continuous = True
+cfg.MODEL.DECODE.PARAM.LIN_VEL.num_class = -1
 
 # angular velocity decoding
-cfg.MODEL.DECODING.PARAMETERS.ANGULAR_VELOCITY  = CN()
-cfg.MODEL.DECODING.PARAMETERS.ANGULAR_VELOCITY.include = True
-cfg.MODEL.DECODING.PARAMETERS.ANGULAR_VELOCITY.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.ANGULAR_VELOCITY.num_category = -1
+cfg.MODEL.DECODE.PARAM.ANG_VEL  = CN()
+cfg.MODEL.DECODE.PARAM.ANG_VEL.include = True
+cfg.MODEL.DECODE.PARAM.ANG_VEL.continuous = True
+cfg.MODEL.DECODE.PARAM.ANG_VEL.num_class = -1
 
 # density decoding
-#cfg.MODEL.DECODING.PARAMETERS.DENSITY  = CN()
-#cfg.MODEL.DECODING.PARAMETERS.DENSITY.include = True
-#cfg.MODEL.DECODING.PARAMETERS.DENSITY.continuous = True
-#cfg.MODEL.DECODING.PARAMETERS.DENSITY.num_category = -1
+#cfg.MODEL.DECODE.PARAM.DENSITY  = CN()
+#cfg.MODEL.DECODE.PARAM.DENSITY.include = True
+#cfg.MODEL.DECODE.PARAM.DENSITY.continuous = True
+#cfg.MODEL.DECODE.PARAM.DENSITY.num_class = -1
 
 # friction decoding
-#cfg.MODEL.DECODING.PARAMETERS.FRICTION  = CN()
-#cfg.MODEL.DECODING.PARAMETERS.FRICTION.include = True
-#cfg.MODEL.DECODING.PARAMETERS.FRICTION.continuous = True
-#cfg.MODEL.DECODING.PARAMETERS.FRICTION.num_category = -1
+#cfg.MODEL.DECODE.PARAM.FRICTION  = CN()
+#cfg.MODEL.DECODE.PARAM.FRICTION.include = True
+#cfg.MODEL.DECODE.PARAM.FRICTION.continuous = True
+#cfg.MODEL.DECODE.PARAM.FRICTION.num_class = -1
 
 # restitution decoding
-#cfg.MODEL.DECODING.PARAMETERS.RESTITUTION  = CN()
-#cfg.MODEL.DECODING.PARAMETERS.RESTITUTION.include = True
-#cfg.MODEL.DECODING.PARAMETERS.RESTITUTION.continuous = True
-#cfg.MODEL.DECODING.PARAMETERS.RESTITUTION.num_category = -1
-
-# colour decoding
-cfg.MODEL.DECODING.PARAMETERS.COLOUR  = CN()
-cfg.MODEL.DECODING.PARAMETERS.COLOUR.include = True
-cfg.MODEL.DECODING.PARAMETERS.COLOUR.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.COLOUR.num_category = -1
+#cfg.MODEL.DECODE.PARAM.RESTITUTION  = CN()
+#cfg.MODEL.DECODE.PARAM.RESTITUTION.include = True
+#cfg.MODEL.DECODE.PARAM.RESTITUTION.continuous = True
+#cfg.MODEL.DECODE.PARAM.RESTITUTION.num_class = -1
 
 # material decoding
-cfg.MODEL.DECODING.PARAMETERS.MATERIAL  = CN()
-cfg.MODEL.DECODING.PARAMETERS.MATERIAL.include = True
-cfg.MODEL.DECODING.PARAMETERS.MATERIAL.continuous = True
-cfg.MODEL.DECODING.PARAMETERS.MATERIAL.num_category = -1
+cfg.MODEL.DECODE.PARAM.MATERIAL  = CN()
+cfg.MODEL.DECODE.PARAM.MATERIAL.include = True
+cfg.MODEL.DECODE.PARAM.MATERIAL.continuous = True
+cfg.MODEL.DECODE.PARAM.MATERIAL.num_class = -1
+
+# colour decoding
+cfg.MODEL.DECODE.PARAM.COLOR  = CN()
+cfg.MODEL.DECODE.PARAM.COLOR.include = True
+cfg.MODEL.DECODE.PARAM.COLOR.continuous = True
+cfg.MODEL.DECODE.PARAM.COLOR.num_class = -1
