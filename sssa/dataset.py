@@ -228,7 +228,8 @@ def filter_sample(cfg, orig_sample, sample):
         The updated sample dictionary after applying the filter.
     """
     for pair in CFG2FEAT[cfg.DATA.set][INPUT].items():
-        if cfg.MODEL.INPUT[pair[0]]:
+        # always include mask
+        if cfg.MODEL.INPUT[pair[0]] or (pair[0] == MASK):
              sample[INPUT][pair[0]] = get_feat(pair[1], orig_sample)
 
     for pair in CFG2FEAT[cfg.DATA.set][PRIOR].items():
@@ -761,7 +762,6 @@ if __name__ == '__main__':
         config_fp = os.path.join(project_dp, f'cfg/templates/sssa-{set_name}.yaml')
         cfg.merge_from_file(config_fp)
         cfg.DATA.path = os.path.join(project_dp, 'data/sets/')
-        #print(cfg)
         sanity_check(cfg)
 
 
